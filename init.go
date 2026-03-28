@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	conn        *grpc.ClientConn
 	auditClient pb.AuditLogServiceClient
 	once        sync.Once
 	initErr     error
@@ -18,9 +19,15 @@ var (
 // GetAuditClient returns a singleton AuditLogServiceClient.
 // The connection is established on the first call using the provided address.
 // Subsequent calls ignore addr and return the already-initialised client.
-func GetAuditClient(addr string) (pb.AuditLogServiceClient, error) {
+func GetAuditClient(host string, port int) (pb.AuditLogServiceClient, error) {
+	addr := fmt.Sprintf("%s:%d", host, port)
 	once.Do(func() {
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		opts := []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024 * 1024)),
+			grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(1024 * 1024)),
+		}
+		conn, err := grpc.NewClient(addr, opts...)
 		if err != nil {
 			initErr = fmt.Errorf("auditclient: failed to connect to %s: %w", addr, err)
 			return
@@ -28,4 +35,13 @@ func GetAuditClient(addr string) (pb.AuditLogServiceClient, error) {
 		auditClient = pb.NewAuditLogServiceClient(conn)
 	})
 	return auditClient, initErr
+}
+
+func Destroy() {
+	if conn != nil {
+		err := conn.Close()
+		if err != nil {
+			fmt.Printf("Failed to close gRPC connection: %v\n", err)
+		}
+	}
 }

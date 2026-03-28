@@ -1,6 +1,6 @@
 module github.com/sw5005-sus/ceramicraft-audit-client
 
-go 1.25.0
+go 1.25.8
 
 require (
 	github.com/gin-gonic/gin v1.12.0
