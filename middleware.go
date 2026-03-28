@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -95,8 +96,7 @@ func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
 
 		client, err := GetAuditClient(auditAddr)
 		if err != nil {
-			// Log but do not block the response.
-			_ = err
+			log.Printf("[auditclient] failed to get audit client: %v", err)
 			return
 		}
 
@@ -110,6 +110,9 @@ func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		_, _ = client.RecordAuditLog(ctx, req)
+		_, err = client.RecordAuditLog(ctx, req)
+		if err != nil {
+			log.Printf("[auditclient] failed to record audit log: %v", err)
+		}
 	}
 }
