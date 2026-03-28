@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package ceramicraft.log;
+
+option go_package = "github.com/sw5005-sus/ceramicraft-audit-client/pb";
+
+message RecordAuditLogRequest {
+    string service = 1;       // Name of the calling service (e.g. "order-service", "product-service")
+    int64 actor_id = 2;       // ID of the actor (merchant or customer)
+    string role = 3;          // Role of the actor (e.g. "MERCHANT", "CUSTOMER", "SYSTEM")
+    string description = 4;   // Description of the action (includes action, resource, and extra context)
+    string occurred_at = 5;   // Actual event time as ISO 8601 string
+}
+
+message RecordAuditLogResponse {
+    bool success = 1;
+    string event_id = 2;      // ID of the newly created log entry
+}
+
+message AuditLog {
+    string id = 1;
+    string service = 2;       // Name of the calling service
+    int64 actor_id = 3;
+    string role = 4;
+    string description = 5;
+    string occurred_at = 6;   // ISO 8601 string, actual time the event occurred
+    string created_at = 7;    // ISO 8601 string
+    string previous_hash = 8;
+    string current_hash = 9;
+}
+
+message QueryAuditLogsRequest {
+    optional int64 actor_id = 1;
+    optional string service = 2;            // Filter by calling service name
+    optional string role = 3;
+    optional string start_time = 4;         // ISO 8601 string, filter by created_at (log write time, inclusive)
+    optional string end_time = 5;           // ISO 8601 string, filter by created_at (log write time, inclusive)
+    optional string occurred_at_start = 6;  // ISO 8601 string, filter by occurred_at (event time, inclusive)
+    optional string occurred_at_end = 7;    // ISO 8601 string, filter by occurred_at (event time, inclusive)
+    int32 limit = 8;                        // Page size
+    int32 offset = 9;                       // Offset for pagination
+}
+
+message QueryAuditLogsResponse {
+    repeated AuditLog logs = 1;
+    int32 total_count = 2;
+}
+
+message VerifyAuditLogChainRequest {
+    optional string start_time = 1; // ISO 8601 string
+    optional string end_time = 2;   // ISO 8601 string
+}
+
+message VerifyAuditLogChainResponse {
+    bool is_valid = 1;
+    string failed_log_id = 2;       // If verification fails, the ID of the log entry where the chain is broken or tampered
+    string message = 3;             // Error details or success message
+}
+
+service AuditLogService {
+    rpc RecordAuditLog (RecordAuditLogRequest) returns (RecordAuditLogResponse);
+    rpc QueryAuditLogs (QueryAuditLogsRequest) returns (QueryAuditLogsResponse);
+    rpc VerifyAuditLogChain (VerifyAuditLogChainRequest) returns (VerifyAuditLogChainResponse);
+}
