@@ -35,7 +35,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 
 func (rw *responseWriter) WriteHeaderNow() {
 	if rw.status == 0 {
-		rw.status = rw.ResponseWriter.Status()
+		rw.status = rw.Status()
 	}
 	rw.ResponseWriter.WriteHeaderNow()
 }
@@ -45,7 +45,8 @@ func (rw *responseWriter) WriteHeaderNow() {
 // key "userID" (set by upstream authentication middleware).
 //
 // serviceName is the name of the calling service (e.g. "order-service").
-// auditAddr   is the gRPC address of the audit log microservice.
+// auditHost   is the hostname or address of the audit log microservice.
+// auditPort   is the gRPC port of the audit log microservice.
 func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !auditableMethods[c.Request.Method] {
@@ -96,9 +97,9 @@ func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFu
 		}
 		roles := ""
 		if v, exists := c.Get("roles"); exists {
-			ruleValue, ok := v.([]string)
+			roleValues, ok := v.([]string)
 			if ok {
-				roles = strings.Join(ruleValue, ",")
+				roles = strings.Join(roleValues, ",")
 			}
 		}
 

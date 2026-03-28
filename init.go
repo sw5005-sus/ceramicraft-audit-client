@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	conn        *grpc.ClientConn
 	auditClient pb.AuditLogServiceClient
 	once        sync.Once
 	initErr     error
@@ -35,13 +34,4 @@ func GetAuditClient(host string, port int) (pb.AuditLogServiceClient, error) {
 		auditClient = pb.NewAuditLogServiceClient(conn)
 	})
 	return auditClient, initErr
-}
-
-func Destroy() {
-	if conn != nil {
-		err := conn.Close()
-		if err != nil {
-			fmt.Printf("Failed to close gRPC connection: %v\n", err)
-		}
-	}
 }
