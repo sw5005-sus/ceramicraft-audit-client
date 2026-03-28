@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 
 func (rw *responseWriter) WriteHeaderNow() {
 	if rw.status == 0 {
-		rw.status = rw.ResponseWriter.Status()
+		rw.status = rw.Status()
 	}
 	rw.ResponseWriter.WriteHeaderNow()
 }
@@ -44,8 +45,9 @@ func (rw *responseWriter) WriteHeaderNow() {
 // key "userID" (set by upstream authentication middleware).
 //
 // serviceName is the name of the calling service (e.g. "order-service").
-// auditAddr   is the gRPC address of the audit log microservice.
-func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
+// auditHost   is the hostname or address of the audit log microservice.
+// auditPort   is the gRPC port of the audit log microservice.
+func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !auditableMethods[c.Request.Method] {
 			c.Next()
@@ -73,7 +75,7 @@ func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
 		if c.Request.URL.RawQuery != "" {
 			query = "?" + c.Request.URL.RawQuery
 		}
-		description := fmt.Sprintf("%s %s%s | body=%s | status=%d",
+		description := fmt.Sprintf(`{"method": "%s", "path": "%s%s", "body": "%s", "status": %d}`,
 			c.Request.Method,
 			c.Request.URL.Path,
 			query,
@@ -93,8 +95,15 @@ func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
 				actorID = int64(id)
 			}
 		}
+		roles := ""
+		if v, exists := c.Get("roles"); exists {
+			roleValues, ok := v.([]string)
+			if ok {
+				roles = strings.Join(roleValues, ",")
+			}
+		}
 
-		client, err := GetAuditClient(auditAddr)
+		client, err := GetAuditClient(auditHost, auditPort)
 		if err != nil {
 			log.Printf("[auditclient] failed to get audit client: %v", err)
 			return
@@ -103,6 +112,7 @@ func AuditMiddleware(serviceName, auditAddr string) gin.HandlerFunc {
 		req := &pb.RecordAuditLogRequest{
 			Service:     serviceName,
 			ActorId:     actorID,
+			Role:        roles,
 			Description: description,
 			OccurredAt:  time.Now().UTC().Format(time.RFC3339),
 		}

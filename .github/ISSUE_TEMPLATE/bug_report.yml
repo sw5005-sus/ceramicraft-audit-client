@@ -1,0 +1,57 @@
+name: Bug 报告 | Bug Report
+description: 用于报告项目中的缺陷或问题 | Report a bug or issue in the project
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 请按要求填写以下内容 | Please fill out the following information
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述 | Problem Description
+      description: 清晰简要地描述你遇到的问题 | Clearly and concisely describe the problem you encountered
+      placeholder: 请描述问题... | Please describe the problem...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 | Steps to Reproduce
+      description: 详细描述如何复现该问题 | Detailed steps to reproduce the issue
+      placeholder: 1. ...\n2. ...\n3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果 | Expected Result
+      description: 描述你期望的正确行为或结果 | Describe the expected behavior or result
+      placeholder: 期望... | Expect...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果 | Actual Result
+      description: 描述实际发生了什么 | Describe what actually happened
+      placeholder: 实际... | Actual...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 环境信息 | Environment Info
+      description: 操作系统、浏览器/终端、其他相关环境 | OS, browser/terminal, other relevant info
+      placeholder: macOS/Windows, Chrome/Edge, ...
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息 | Additional Info
+      description: 其他有助于定位问题的信息 | Any other information that may help identify the issue
+      placeholder: ...
+    validations:
+      required: false

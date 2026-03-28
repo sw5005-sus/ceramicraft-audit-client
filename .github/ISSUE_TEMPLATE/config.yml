@@ -1,0 +1,11 @@
+# 配置议题模板选择器
+blank_issues_enabled: false
+defaults:
+  - label: bug
+    name: Bug 报告 | Bug Report
+    description: 用于报告项目中的缺陷或问题 | Report a bug or issue in the project
+    form: bug_report.yml
+  - label: enhancement
+    name: 功能需求 | Feature Request
+    description: 用于提出新功能或改进建议 | Propose a new feature or improvement
+    form: feature_request.yml
