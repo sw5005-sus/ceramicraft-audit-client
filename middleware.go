@@ -49,7 +49,7 @@ func (rw *responseWriter) WriteHeaderNow() {
 // auditPort   is the gRPC port of the audit log microservice.
 func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("[auditclient] processing request for audit middleware")
+		log.Println("[auditclient] processing request for audit middleware")
 		if !auditableMethods[c.Request.Method] {
 			c.Next()
 			return
@@ -109,7 +109,7 @@ func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFu
 			log.Printf("[auditclient] failed to get audit client: %v", err)
 			return
 		}
-		fmt.Println("[auditclient] recording audit log with description:", description)
+		log.Println("[auditclient] recording audit log with description:", description)
 		req := &pb.RecordAuditLogRequest{
 			Service:     serviceName,
 			ActorId:     actorID,
@@ -125,6 +125,6 @@ func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFu
 		if err != nil {
 			log.Printf("[auditclient] failed to record audit log: %v", err)
 		}
-		fmt.Printf("[auditclient] successfully recorded audit log: response=%v\terr=%v\n", resp, err)
+		log.Printf("[auditclient] successfully recorded audit log: response=%v\terr=%v\n", resp, err)
 	}
 }
