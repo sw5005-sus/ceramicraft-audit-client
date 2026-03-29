@@ -108,7 +108,6 @@ func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFu
 			log.Printf("[auditclient] failed to get audit client: %v", err)
 			return
 		}
-
 		req := &pb.RecordAuditLogRequest{
 			Service:     serviceName,
 			ActorId:     actorID,
@@ -120,9 +119,10 @@ func AuditMiddleware(serviceName, auditHost string, auditPort int) gin.HandlerFu
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		_, err = client.RecordAuditLog(ctx, req)
+		resp, err := client.RecordAuditLog(ctx, req)
 		if err != nil {
 			log.Printf("[auditclient] failed to record audit log: %v", err)
 		}
+		log.Printf("[auditclient] successfully recorded audit log: response=%v\terr=%v\n", resp, err)
 	}
 }
