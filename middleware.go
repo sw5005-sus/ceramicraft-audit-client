@@ -20,6 +20,7 @@ var auditableMethods = map[string]bool{
 	http.MethodPut:    true,
 	http.MethodPatch:  true,
 	http.MethodDelete: true,
+	http.MethodGet:    true,
 }
 
 // responseWriter wraps gin.ResponseWriter to capture the status code.
